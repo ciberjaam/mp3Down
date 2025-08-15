@@ -3,37 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>mp3Down Web</title>
+    <title>mp3Down - Convertidor de videos a MP3</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f8f9fa; margin: 0; padding: 0; }
-        header { background: #343a40; color: white; padding: 1rem; text-align: center; }
-        main { max-width: 600px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        input[type=text] { width: 100%; padding: 0.5rem; font-size: 1rem; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 4px; }
-        button { background: #007bff; color: white; padding: 0.7rem 1.5rem; font-size: 1rem; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        .msg { margin-bottom: 1rem; padding: 0.5rem; border-radius: 4px; }
-        .error { background: #f8d7da; color: #721c24; }
-        .success { background: #d4edda; color: #155724; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px 0;
+            margin: 0 0 30px 0;
+        }
+        form {
+            margin: 0 auto;
+            max-width: 400px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px #ccc;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            box-sizing: border-box;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        p {
+            color: #555;
+        }
     </style>
 </head>
 <body>
-<header>
-    <h1>mp3Down Web</h1>
-    <p>Descarga audio de videos y conviértelo a MP3</p>
-</header>
-<main>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="msg {{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-    <form method="post">
-        <label for="video_url">URL del video:</label>
-        <input type="text" name="video_url" id="video_url" placeholder="Pega el enlace aquí">
-        <button type="submit">Descargar MP3</button>
+    <h1>mp3Down - Convertidor de videos a MP3</h1>
+    <form action="/download" method="post">
+        <input type="text" name="url" placeholder="Pega el enlace del video" required>
+        <button type="submit">Convertir a MP3</button>
     </form>
-</main>
+    <p>Compatible con PC y dispositivos móviles. Simplemente pega el enlace y descarga tu MP3.</p>
 </body>
 </html>
