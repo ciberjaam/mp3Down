@@ -50,6 +50,15 @@
         p {
             color: #555;
         }
+        .mensaje {
+            color: red;
+            margin-top: 20px;
+        }
+        footer {
+            margin-top: 40px;
+            color: #777;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -58,6 +67,11 @@
         <input type="text" name="url" placeholder="Pega el enlace del video" required>
         <button type="submit">Convertir a MP3</button>
     </form>
-    <p>Compatible con PC y dispositivos móviles. Simplemente pega el enlace y descarga tu MP3.</p>
+
+    {% if mensaje %}
+    <div class="mensaje">{{ mensaje }}</div>
+    {% endif %}
+
+    <footer>Desarrollado por Variedades LA</footer>
 </body>
 </html>
