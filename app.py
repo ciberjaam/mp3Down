@@ -1,63 +1,53 @@
-from flask import Flask, render_template, request, send_from_directory
+from flask import Flask, render_template, request, send_file
 import yt_dlp
-import subprocess
-from pathlib import Path
 import os
+import subprocess
+import uuid
 
 app = Flask(__name__)
 
-# Ruta para guardar descargas
-DOWNLOAD_FOLDER = Path("downloads")
-DOWNLOAD_FOLDER.mkdir(exist_ok=True)
-
-# Nombre de ffmpeg (debe estar instalado en tu sistema)
+# Ruta del ejecutable ffmpeg (Render ya lo instalará con el build script)
 FFMPEG_BINARY = "ffmpeg"
 
-@app.route("/", methods=["GET", "POST"])
+@app.route('/')
 def index():
-    if request.method == "POST":
-        video_url = request.form.get("url")
+    return render_template('index.html')
 
-        if not video_url:
-            return "No se proporcionó un enlace", 400
+@app.route('/download', methods=['POST'])
+def download():
+    url = request.form['url']
+    output_id = str(uuid.uuid4())
+    video_path = f"{output_id}.mp4"
+    audio_path = f"{output_id}.mp3"
 
-        try:
-            # Configuración de yt-dlp para descargar solo el audio
-            ydl_opts = {
-                'format': 'bestaudio/best',
-                'outtmpl': str(DOWNLOAD_FOLDER / "%(title)s.%(ext)s"),
-                'noplaylist': True
-            }
+    try:
+        # Descargar el video de YouTube
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'outtmpl': video_path
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
 
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(video_url, download=True)
-                downloaded_path = Path(ydl.prepare_filename(info))
+        # Convertir a MP3 usando ffmpeg
+        subprocess.run([FFMPEG_BINARY, "-i", video_path, "-q:a", "0", "-map", "a", audio_path], check=True)
 
-            # Convertir a MP3
-            mp3_filename = downloaded_path.with_suffix(".mp3")
-            cmd = [
-                FFMPEG_BINARY, "-i", str(downloaded_path),
-                "-vn", "-ab", "320k", "-ar", "44100", "-y",
-                str(mp3_filename)
-            ]
-            subprocess.run(cmd, check=True)
+        # Borrar el video original
+        if os.path.exists(video_path):
+            os.remove(video_path)
 
-            # Borrar archivo original (opcional)
-            if downloaded_path.exists():
-                downloaded_path.unlink()
+        # Enviar el MP3 al navegador
+        return send_file(audio_path, as_attachment=True)
 
-            # Enviar archivo al navegador para descarga
-            return send_from_directory(
-                directory=str(mp3_filename.parent),
-                path=mp3_filename.name,
-                as_attachment=True
-            )
+    except Exception as e:
+        return f"Ocurrió un error: {str(e)}"
 
-        except Exception as e:
-            return f"Ocurrió un error: {str(e)}", 500
+    finally:
+        # Limpiar archivos residuales
+        if os.path.exists(video_path):
+            os.remove(video_path)
 
-    return render_template("index.html")
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
 
-
-if __name__ == "__main__":
-    app.run(debug=True)
